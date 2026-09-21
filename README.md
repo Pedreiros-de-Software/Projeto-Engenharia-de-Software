@@ -4,3 +4,4 @@
 - Felipe Pires Araujo - RA186697
 - Pedro Romasanta Rosa - RA206599
 - André Lucas Loubet Souza - RA253333
+- Matheus Henrique Aliberto de Francisco - RA239930
