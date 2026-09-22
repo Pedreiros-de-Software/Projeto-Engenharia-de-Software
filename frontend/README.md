@@ -44,23 +44,3 @@ Para visualizar localmente a versão gerada:
 ```bash
 npm run preview
 ```
-
-## Testes
-
-Os testes automatizados do frontend serão executados utilizando as ferramentas definidas no projeto.
-
-```bash
-npm run test
-```
-
-Para executar os testes uma única vez:
-
-```bash
-npm run test:run
-```
-
-Para gerar o relatório de cobertura:
-
-```bash
-npm run test:coverage
-```
