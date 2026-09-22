@@ -1,0 +1,17 @@
+@import url("../theme.css");
+body {
+  background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+h1 {
+  color: var(--color-primary);
+  font-size: 3em;
+}
+h3 {
+  color: var(--color-text);
+  font-size: 1.1em;
+}
