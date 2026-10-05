@@ -74,7 +74,7 @@ jobs:
           npm ci
           npm run lint
 
-  test:
+  testes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +85,37 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - name: Testes e cobertura (backend)
+      - name: Testes (backend)
+        if: hashFiles('backend/go.mod') != ''
+        working-directory: backend
+        run: go test -race ./...
+
+      - name: Setup Node
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Testes (frontend)
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test --if-present
+
+  cobertura:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Cobertura (backend)
         if: hashFiles('backend/go.mod') != ''
         working-directory: backend
         run: |
@@ -110,7 +140,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Testes e cobertura (frontend)
+      - name: Cobertura (frontend)
         if: hashFiles('frontend/package.json') != ''
         working-directory: frontend
         run: |
