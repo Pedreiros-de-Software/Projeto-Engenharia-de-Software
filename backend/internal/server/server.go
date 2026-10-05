@@ -14,6 +14,12 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 
 func healthHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.Header().Set("Allow", http.MethodGet)
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		status := "ok"
 		code := http.StatusOK
 
