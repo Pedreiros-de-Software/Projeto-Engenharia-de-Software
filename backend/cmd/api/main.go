@@ -19,7 +19,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("connecting to database: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("closing database connection: %v", err)
+		}
+	}()
 
 	router := server.NewRouter(db)
 

@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -30,6 +31,8 @@ func healthHandler(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(code)
-		json.NewEncoder(w).Encode(map[string]string{"status": status})
+		if err := json.NewEncoder(w).Encode(map[string]string{"status": status}); err != nil {
+			log.Printf("encoding health response: %v", err)
+		}
 	}
 }

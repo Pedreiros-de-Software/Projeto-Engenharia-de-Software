@@ -14,7 +14,9 @@ func Connect(databaseURL string) (*sql.DB, error) {
 	}
 
 	if err := db.Ping(); err != nil {
-		db.Close()
+		if closeErr := db.Close(); closeErr != nil {
+			return nil, fmt.Errorf("pinging database: %w (closing database connection: %v)", err, closeErr)
+		}
 		return nil, fmt.Errorf("pinging database: %w", err)
 	}
 
