@@ -1,0 +1,155 @@
+name: CI
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build backend
+        if: hashFiles('backend/go.mod') != ''
+        working-directory: backend
+        run: |
+          go mod download
+          go mod verify
+          go build ./...
+
+      - name: Setup Node
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build frontend
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: golangci-lint
+        if: hashFiles('backend/go.mod') != ''
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          working-directory: backend
+
+      - name: Setup Node
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: ESLint
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Testes (backend)
+        if: hashFiles('backend/go.mod') != ''
+        working-directory: backend
+        run: go test -race ./...
+
+      - name: Setup Node
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Testes (frontend)
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test --if-present
+
+  cobertura:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Cobertura (backend)
+        if: hashFiles('backend/go.mod') != ''
+        working-directory: backend
+        run: |
+          go test -race -covermode=atomic -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out > coverage.txt
+          go tool cover -html=coverage.out -o coverage.html
+          { echo '### Cobertura backend'; echo '```'; tail -n 1 coverage.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload cobertura backend
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: |
+            backend/coverage.out
+            backend/coverage.txt
+            backend/coverage.html
+
+      - name: Setup Node
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Cobertura (frontend)
+        if: hashFiles('frontend/package.json') != ''
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run test:coverage --if-present
+      - name: Upload cobertura frontend
+        if: hashFiles('frontend/package.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: frontend/coverage
+          if-no-files-found: warn
