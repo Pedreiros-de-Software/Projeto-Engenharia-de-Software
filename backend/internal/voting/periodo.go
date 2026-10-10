@@ -8,19 +8,24 @@ import (
 // EstadoVotacao indica a situação de uma votação em relação à sua janela.
 type EstadoVotacao int
 
+// VotacaoInvalida é o valor zero, devolvido junto com erro para janelas
+// inválidas, de modo que um erro ignorado não seja lido como estado válido.
 const (
-	NaoIniciada EstadoVotacao = iota
-	Aberta
-	Encerrada
+	VotacaoInvalida EstadoVotacao = iota
+	VotacaoNaoIniciada
+	VotacaoAberta
+	VotacaoEncerrada
 )
 
 func (e EstadoVotacao) String() string {
 	switch e {
-	case NaoIniciada:
+	case VotacaoInvalida:
+		return "invalida"
+	case VotacaoNaoIniciada:
 		return "nao iniciada"
-	case Aberta:
+	case VotacaoAberta:
 		return "aberta"
-	case Encerrada:
+	case VotacaoEncerrada:
 		return "encerrada"
 	}
 	return "desconhecido"
@@ -33,13 +38,13 @@ var ErrJanelaInvalida = errors.New("janela de votacao invalida")
 // anterior ou igual ao início são rejeitados.
 func StatusVotacao(inicio, fim, agora time.Time) (EstadoVotacao, error) {
 	if inicio.IsZero() || fim.IsZero() || agora.IsZero() || !fim.After(inicio) {
-		return NaoIniciada, ErrJanelaInvalida
+		return VotacaoInvalida, ErrJanelaInvalida
 	}
 	if agora.Before(inicio) {
-		return NaoIniciada, nil
+		return VotacaoNaoIniciada, nil
 	}
 	if agora.Before(fim) {
-		return Aberta, nil
+		return VotacaoAberta, nil
 	}
-	return Encerrada, nil
+	return VotacaoEncerrada, nil
 }
