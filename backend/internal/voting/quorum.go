@@ -1,10 +1,14 @@
 package voting
 
-// verifica se os votos favoráveis atingiram 2/3 da fração total do condomínio
+import "math"
+
+// AtingiuQuorum verifica se os votos favoráveis atingiram 2/3 da fração total.
+// Totais não positivos, valores não finitos ou votos fora do total são inválidos.
 func AtingiuQuorum(votosFavoraveis float64, totalFracoes float64) bool {
-	if totalFracoes <= 0 {
+	if math.IsNaN(votosFavoraveis) || math.IsNaN(totalFracoes) ||
+		math.IsInf(votosFavoraveis, 0) || math.IsInf(totalFracoes, 0) ||
+		totalFracoes <= 0 || votosFavoraveis < 0 || votosFavoraveis > totalFracoes {
 		return false
 	}
-	// 2.0 / 3.0 representa o quorum qualificado de dois terços
 	return (votosFavoraveis / totalFracoes) >= (2.0 / 3.0)
 }

@@ -1,6 +1,9 @@
 package voting
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestAtingiuQuorum(t *testing.T) {
 	testes := []struct {
@@ -33,6 +36,18 @@ func TestAtingiuQuorum(t *testing.T) {
 			totalFracoes:    0.0,
 			esperaAprovacao: false,
 		},
+		{"Logo abaixo de dois terços", math.Nextafter(200, 0), 300, false},
+		{"Percentual truncado 66,66 não equivale a dois terços", 66.66, 100, false},
+		{"Sem votos favoráveis", 0, 100, false},
+		{"Total negativo", 1, -100, false},
+		{"Votos negativos", -1, 100, false},
+		{"Votos excedem total", 101, 100, false},
+		{"Votos NaN", math.NaN(), 100, false},
+		{"Total NaN", 100, math.NaN(), false},
+		{"Votos infinitos", math.Inf(1), 100, false},
+		{"Total infinito", 100, math.Inf(1), false},
+		{"Votos infinito negativo", math.Inf(-1), 100, false},
+		{"Total infinito negativo", 100, math.Inf(-1), false},
 	}
 
 	for _, tc := range testes {
