@@ -102,7 +102,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npm test --if-present
+          npm test
 
   cobertura:
     runs-on: ubuntu-latest
@@ -145,11 +145,11 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npm run test:coverage --if-present
+          npm run test:coverage
       - name: Upload cobertura frontend
         if: hashFiles('frontend/package.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-frontend
           path: frontend/coverage
-          if-no-files-found: warn
+          if-no-files-found: error
