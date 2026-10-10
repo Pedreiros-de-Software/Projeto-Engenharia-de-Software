@@ -1,38 +1,26 @@
 package voting
 
-// armazena o resultado da verificação de maioria
+// ResultadoSegundoTurno armazena o resultado da verificação de maioria.
 type ResultadoSegundoTurno struct {
 	VencedorDefinido    bool
 	PrecisaSegundoTurno bool
 	PercentualLider     float64
 }
 
-// calcula se a chapa líder obteve mais de 50% dos votos válidos
-// considera apenas votos válidos (brancos e nulos descartados)
+// VerificarMaioriaAbsoluta recebe contagens já limitadas aos votos válidos.
+// Brancos e nulos devem ser excluídos pelo chamador. Sem votos válidos ou com
+// contagens negativas, retorna resultado vazio: não há vencedor nem segundo turno.
+// A função sinaliza a necessidade de segundo turno; não cria um novo pleito.
 func VerificarMaioriaAbsoluta(votosLider int, outrosVotosValidos int) ResultadoSegundoTurno {
-	totalValidos := votosLider + outrosVotosValidos
-
-	if totalValidos <= 0 || votosLider <= 0 {
-		return ResultadoSegundoTurno{
-			VencedorDefinido:    false,
-			PrecisaSegundoTurno: true,
-			PercentualLider:     0.0,
-		}
+	if votosLider < 0 || outrosVotosValidos < 0 || (votosLider == 0 && outrosVotosValidos == 0) {
+		return ResultadoSegundoTurno{}
 	}
-
-	percentual := (float64(votosLider) / float64(totalValidos)) * 100.0
-
-	if percentual > 50.0 {
-		return ResultadoSegundoTurno{
-			VencedorDefinido:    true,
-			PrecisaSegundoTurno: false,
-			PercentualLider:     percentual,
-		}
-	}
-
+	// Converte antes de somar para evitar overflow na soma de inteiros.
+	totalValidos := float64(votosLider) + float64(outrosVotosValidos)
+	venceu := votosLider > outrosVotosValidos
 	return ResultadoSegundoTurno{
-		VencedorDefinido:    false,
-		PrecisaSegundoTurno: true,
-		PercentualLider:     percentual,
+		VencedorDefinido:    venceu,
+		PrecisaSegundoTurno: !venceu,
+		PercentualLider:     float64(votosLider) / totalValidos * 100,
 	}
 }
