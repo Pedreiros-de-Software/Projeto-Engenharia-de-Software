@@ -44,3 +44,7 @@ Para visualizar localmente a versão gerada:
 ```bash
 npm run preview
 ```
+
+## Verificações automatizadas
+
+Execute em `frontend/`: `npm ci`, `npm run build`, `npm run lint`, `npm test` e `npm run test:coverage`. Os testes da página inicial validam a identificação do produto e a apresentação dos três contextos de decisão. O relatório cobre os componentes de página em `src/pages/` e fica em `coverage/`; não representa cobertura de funcionalidades de votação ainda não implementadas.
