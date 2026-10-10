@@ -1,6 +1,9 @@
 package voting
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestValidarElegibilidade(t *testing.T) {
 	testes := []struct {
@@ -39,6 +42,12 @@ func TestValidarElegibilidade(t *testing.T) {
 			esperaValido: false,
 			msgEsperada:  "fracao ideal deve ser maior que zero",
 		},
+		{"ID vazio", Condomino{"", true, 10}, false, "identificador do condomino invalido"},
+		{"ID apenas espaços", Condomino{"   ", true, 10}, false, "identificador do condomino invalido"},
+		{"Fração negativa", Condomino{"apto-1", true, -1}, false, "fracao ideal deve ser maior que zero"},
+		{"Fração NaN", Condomino{"apto-1", true, math.NaN()}, false, "fracao ideal deve ser maior que zero"},
+		{"Fração infinita", Condomino{"apto-1", true, math.Inf(1)}, false, "fracao ideal deve ser maior que zero"},
+		{"Fração infinita negativa", Condomino{"apto-1", true, math.Inf(-1)}, false, "fracao ideal deve ser maior que zero"},
 	}
 
 	for _, tc := range testes {
