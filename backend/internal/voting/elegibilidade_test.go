@@ -1,16 +1,16 @@
 package voting
 
 import (
+	"errors"
 	"math"
 	"testing"
 )
 
 func TestValidarElegibilidade(t *testing.T) {
 	testes := []struct {
-		nome         string
-		condomino    Condomino
-		esperaValido bool
-		msgEsperada  string
+		nome        string
+		condomino   Condomino
+		errEsperado error
 	}{
 		{
 			nome: "Condomino regular e com fracao ideal",
@@ -19,8 +19,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				Adimplente:  true,
 				FracaoIdeal: 45.5,
 			},
-			esperaValido: true,
-			msgEsperada:  "apto a votar",
+			errEsperado: nil,
 		},
 		{
 			nome: "Condomino inadimplente bloqueado",
@@ -29,8 +28,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				Adimplente:  false,
 				FracaoIdeal: 60.0,
 			},
-			esperaValido: false,
-			msgEsperada:  "condomino impedido de votar por inadimplencia",
+			errEsperado: ErrInadimplente,
 		},
 		{
 			nome: "Condomino com fracao zerada",
@@ -39,25 +37,69 @@ func TestValidarElegibilidade(t *testing.T) {
 				Adimplente:  true,
 				FracaoIdeal: 0.0,
 			},
-			esperaValido: false,
-			msgEsperada:  "fracao ideal deve ser maior que zero",
+			errEsperado: ErrFracaoIdealInvalida,
 		},
-		{"ID vazio", Condomino{"", true, 10}, false, "identificador do condomino invalido"},
-		{"ID apenas espaços", Condomino{"   ", true, 10}, false, "identificador do condomino invalido"},
-		{"Fração negativa", Condomino{"apto-1", true, -1}, false, "fracao ideal deve ser maior que zero"},
-		{"Fração NaN", Condomino{"apto-1", true, math.NaN()}, false, "fracao ideal deve ser maior que zero"},
-		{"Fração infinita", Condomino{"apto-1", true, math.Inf(1)}, false, "fracao ideal deve ser maior que zero"},
-		{"Fração infinita negativa", Condomino{"apto-1", true, math.Inf(-1)}, false, "fracao ideal deve ser maior que zero"},
+		{
+			nome: "ID vazio",
+			condomino: Condomino{
+				ID:          "",
+				Adimplente:  true,
+				FracaoIdeal: 10,
+			},
+			errEsperado: ErrIdentificadorInvalido,
+		},
+		{
+			nome: "ID apenas espaços",
+			condomino: Condomino{
+				ID:          " ",
+				Adimplente:  true,
+				FracaoIdeal: 10,
+			},
+			errEsperado: ErrIdentificadorInvalido,
+		},
+		{
+			nome: "Fração negativa",
+			condomino: Condomino{
+				ID:          "apto-1",
+				Adimplente:  true,
+				FracaoIdeal: -1,
+			},
+			errEsperado: ErrFracaoIdealInvalida,
+		},
+		{
+			nome: "Fração NaN",
+			condomino: Condomino{
+				ID:          "apto-1",
+				Adimplente:  true,
+				FracaoIdeal: math.NaN(),
+			},
+			errEsperado: ErrFracaoIdealInvalida,
+		},
+		{
+			nome: "Fração infinita",
+			condomino: Condomino{
+				ID:          "apto-1",
+				Adimplente:  true,
+				FracaoIdeal: math.Inf(1),
+			},
+			errEsperado: ErrFracaoIdealInvalida,
+		},
+		{
+			nome: "Fração infinita negativa",
+			condomino: Condomino{
+				ID:          "apto-1",
+				Adimplente:  true,
+				FracaoIdeal: math.Inf(-1),
+			},
+			errEsperado: ErrFracaoIdealInvalida,
+		},
 	}
 
 	for _, tc := range testes {
 		t.Run(tc.nome, func(t *testing.T) {
-			valido, msg := ValidarElegibilidade(tc.condomino)
-			if valido != tc.esperaValido {
-				t.Errorf("%s: esperava valido=%v, obteve %v", tc.nome, tc.esperaValido, valido)
-			}
-			if msg != tc.msgEsperada {
-				t.Errorf("%s: esperava msg='%s', obteve '%s'", tc.nome, tc.msgEsperada, msg)
+			err := ValidarElegibilidade(tc.condomino)
+			if !errors.Is(err, tc.errEsperado) {
+				t.Errorf("%s: esperava erro '%v', obteve '%v'", tc.nome, tc.errEsperado, err)
 			}
 		})
 	}

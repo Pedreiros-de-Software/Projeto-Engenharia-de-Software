@@ -1,8 +1,16 @@
 package voting
 
 import (
+	"errors"
 	"math"
 	"strings"
+)
+
+// Erros sentinela exportados para validação de elegibilidade
+var (
+	ErrIdentificadorInvalido = errors.New("identificador do condomino invalido")
+	ErrInadimplente          = errors.New("condomino impedido de votar por inadimplencia")
+	ErrFracaoIdealInvalida   = errors.New("fracao ideal deve ser maior que zero")
 )
 
 type Condomino struct {
@@ -12,16 +20,19 @@ type Condomino struct {
 }
 
 // ValidarElegibilidade checa se o condômino tem direito a voto e se sua fração é positiva.
-func ValidarElegibilidade(c Condomino) (bool, string) {
+// Retorna nil quando o condômino está apto a votar ou um erro sentinela específico caso contrário.
+func ValidarElegibilidade(c Condomino) error {
 	if strings.TrimSpace(c.ID) == "" {
-		return false, "identificador do condomino invalido"
-	}
-	if !c.Adimplente {
-		return false, "condomino impedido de votar por inadimplencia"
-	}
-	if c.FracaoIdeal <= 0 || math.IsNaN(c.FracaoIdeal) || math.IsInf(c.FracaoIdeal, 0) {
-		return false, "fracao ideal deve ser maior que zero"
+		return ErrIdentificadorInvalido
 	}
 
-	return true, "apto a votar"
+	if !c.Adimplente {
+		return ErrInadimplente
+	}
+
+	if c.FracaoIdeal <= 0 || math.IsNaN(c.FracaoIdeal) || math.IsInf(c.FracaoIdeal, 0) {
+		return ErrFracaoIdealInvalida
+	}
+
+	return nil
 }
