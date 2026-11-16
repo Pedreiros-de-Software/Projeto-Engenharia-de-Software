@@ -13,7 +13,12 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	return mux
 }
 
-func healthHandler(db *sql.DB) http.HandlerFunc {
+// pinger é a parte do banco usada pelo health check; *sql.DB a satisfaz.
+type pinger interface {
+	Ping() error
+}
+
+func healthHandler(db pinger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.Header().Set("Allow", http.MethodGet)
