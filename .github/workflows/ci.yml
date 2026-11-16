@@ -153,3 +153,23 @@ jobs:
           name: coverage-frontend
           path: frontend/coverage
           if-no-files-found: error
+
+  mutacao:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('backend/go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Teste de mutacao (backend/internal/voting)
+        if: hashFiles('backend/go.mod') != ''
+        working-directory: backend
+        shell: bash
+        run: |
+          go install github.com/go-gremlins/gremlins/cmd/gremlins@v0.6.0
+          gremlins unleash ./internal/voting | tee mutacao.txt
+          { echo '### Teste de mutacao (internal/voting)'; echo '```'; cat mutacao.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

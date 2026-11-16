@@ -41,6 +41,7 @@ func TestAtingiuQuorum(t *testing.T) {
 		{"Sem votos favoráveis", 0, 100, false},
 		{"Total negativo", 1, -100, false},
 		{"Votos negativos", -1, 100, false},
+		{"Votação unânime (votos iguais ao total)", 100, 100, true},
 		{"Votos excedem total", 101, 100, false},
 		{"Votos NaN", math.NaN(), 100, false},
 		{"Total NaN", 100, math.NaN(), false},
