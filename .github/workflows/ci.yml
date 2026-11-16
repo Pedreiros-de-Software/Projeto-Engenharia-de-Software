@@ -122,7 +122,7 @@ jobs:
           go test -race -covermode=atomic -coverprofile=coverage.out ./...
           go tool cover -func=coverage.out > coverage.txt
           go tool cover -html=coverage.out -o coverage.html
-          { echo '### Cobertura backend'; echo '```'; tail -n 1 coverage.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo '### Cobertura backend'; echo '```'; cat coverage.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload cobertura backend
         if: hashFiles('backend/go.mod') != ''
         uses: actions/upload-artifact@v4
