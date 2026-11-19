@@ -43,9 +43,14 @@ func (p *PesoPorUnidade) Peso(eleitorID string) (float64, error) {
 var (
 	ErrEleitorDesconhecido = errors.New("eleitor desconhecido")
 	ErrOpcaoDesconhecida   = errors.New("opcao desconhecida")
+	ErrPonderacaoAusente   = errors.New("estrategia de ponderacao ausente")
 )
 
 func ContarVotos(opcoes []string, votos []Voto, p Ponderacao) (map[string]float64, error) {
+	if p == nil {
+		return nil, ErrPonderacaoAusente
+	}
+
 	resultados := make(map[string]float64, len(opcoes))
 	for _, opcao := range opcoes {
 		resultados[opcao] = 0

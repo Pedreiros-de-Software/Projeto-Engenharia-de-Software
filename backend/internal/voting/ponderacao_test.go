@@ -68,6 +68,19 @@ func TestContarVotos(t *testing.T) {
 			ponderacao: PesoUnitario{},
 			resultado:  map[string]float64{"sim": 0, "nao": 0},
 		},
+		{
+			nome:         "Ponderacao ausente",
+			opcoes:       []string{"sim"},
+			votos:        []Voto{{EleitorID: "1", Opcao: "sim"}},
+			ponderacao:   nil,
+			erroEsperado: ErrPonderacaoAusente,
+		},
+		{
+			nome:         "Ponderacao ausente sem votos",
+			opcoes:       []string{"sim"},
+			ponderacao:   nil,
+			erroEsperado: ErrPonderacaoAusente,
+		},
 	}
 
 	for _, tt := range testes {
