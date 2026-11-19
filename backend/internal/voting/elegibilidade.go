@@ -2,7 +2,6 @@ package voting
 
 import (
 	"errors"
-	"math"
 	"strings"
 )
 
@@ -30,7 +29,7 @@ func ValidarElegibilidade(c Condomino) error {
 		return ErrInadimplente
 	}
 
-	if c.FracaoIdeal <= 0 || math.IsNaN(c.FracaoIdeal) || math.IsInf(c.FracaoIdeal, 0) {
+	if !finito(c.FracaoIdeal) || c.FracaoIdeal <= 0 {
 		return ErrFracaoIdealInvalida
 	}
 

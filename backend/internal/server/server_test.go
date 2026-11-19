@@ -79,7 +79,7 @@ func TestHealthHandlerFalhaAoEscreverResposta(t *testing.T) {
 
 func TestNewRouter(t *testing.T) {
 	// Nenhuma das requisições chega ao banco, então ele pode ser nil.
-	router := NewRouter(nil)
+	router := NewRouter(nil, nil)
 
 	testes := []struct {
 		nome           string
@@ -97,6 +97,28 @@ func TestNewRouter(t *testing.T) {
 			if rec.Code != tc.codigoEsperado {
 				t.Errorf("status: esperado %d, obtido %d", tc.codigoEsperado, rec.Code)
 			}
+		})
+	}
+}
+
+func TestRotasDesconhecidasDaAPIRespondemJSON(t *testing.T) {
+	router := NewRouter(nil, nil)
+
+	testes := []struct {
+		nome         string
+		metodo, rota string
+	}{
+		{"rota inexistente", http.MethodGet, "/api/nao-existe"},
+		{"raiz da API", http.MethodGet, "/api/"},
+		{"método errado em rota de ação", http.MethodGet, "/api/votacoes/1/encerrar"},
+		{"método sem rota", http.MethodDelete, "/api/votacoes/1"},
+		{"login só aceita POST", http.MethodGet, "/api/login"},
+	}
+	for _, tc := range testes {
+		t.Run(tc.nome, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, httptest.NewRequest(tc.metodo, tc.rota, nil))
+			conferirErro(t, rec, http.StatusNotFound, "nao_encontrado")
 		})
 	}
 }
