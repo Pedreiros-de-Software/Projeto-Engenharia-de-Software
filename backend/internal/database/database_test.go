@@ -1,6 +1,7 @@
 package database
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -25,5 +26,21 @@ func TestConnectFalhas(t *testing.T) {
 				t.Errorf("esperava erro contendo %q, obteve %v", tc.erroContem, err)
 			}
 		})
+	}
+}
+
+func TestConnectComBancoDisponivel(t *testing.T) {
+	url := os.Getenv("TEST_DATABASE_URL")
+	if url == "" {
+		t.Skip("TEST_DATABASE_URL não definida: teste de integração com Postgres ignorado")
+	}
+
+	db, err := Connect(url)
+	if err != nil {
+		t.Fatalf("erro inesperado: %v", err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+	if err := db.Ping(); err != nil {
+		t.Errorf("conexão devolvida deveria responder ao ping: %v", err)
 	}
 }

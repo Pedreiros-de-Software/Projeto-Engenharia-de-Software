@@ -1,17 +1,69 @@
-@import url("../theme.css");
-body {
-  background-color: var(--color-background);
+.painel {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  gap: 2rem;
 }
-h1 {
+
+.painel-apresentacao {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+
+.painel-apresentacao h1 {
   color: var(--color-primary);
   font-size: 3em;
 }
-h3 {
+
+.painel-apresentacao h3 {
   color: var(--color-text);
   font-size: 1.1em;
+  font-weight: 400;
+}
+
+.painel-grupo h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.painel-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.painel-vazio {
+  color: var(--color-text);
+}
+
+.cartao-votacao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cartao-votacao-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cartao-votacao-topo h3 {
+  font-size: 1.05rem;
+}
+
+.cartao-votacao-descricao {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.cartao-votacao-rodape {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
