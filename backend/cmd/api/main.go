@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/onicolasrosa/Projeto-Engenharia-de-Software/backend/internal/config"
-	"github.com/onicolasrosa/Projeto-Engenharia-de-Software/backend/internal/database"
-	"github.com/onicolasrosa/Projeto-Engenharia-de-Software/backend/internal/server"
+	"github.com/Pedreiros-de-Software/Projeto-Engenharia-de-Software/backend/internal/config"
+	"github.com/Pedreiros-de-Software/Projeto-Engenharia-de-Software/backend/internal/database"
+	"github.com/Pedreiros-de-Software/Projeto-Engenharia-de-Software/backend/internal/server"
 )
 
 func main() {
