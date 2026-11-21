@@ -11,6 +11,7 @@ func TestValidarElegibilidade(t *testing.T) {
 		nome        string
 		condomino   Condomino
 		errEsperado error
+		msgEsperada string
 	}{
 		{
 			nome: "Condomino regular e com fracao ideal",
@@ -29,6 +30,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: 60.0,
 			},
 			errEsperado: ErrInadimplente,
+			msgEsperada: "condomino impedido de votar por inadimplencia",
 		},
 		{
 			nome: "Condomino com fracao zerada",
@@ -38,6 +40,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: 0.0,
 			},
 			errEsperado: ErrFracaoIdealInvalida,
+			msgEsperada: "fracao ideal deve ser maior que zero",
 		},
 		{
 			nome: "ID vazio",
@@ -47,6 +50,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: 10,
 			},
 			errEsperado: ErrIdentificadorInvalido,
+			msgEsperada: "identificador do condomino invalido",
 		},
 		{
 			nome: "ID apenas espaços",
@@ -56,6 +60,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: 10,
 			},
 			errEsperado: ErrIdentificadorInvalido,
+			msgEsperada: "identificador do condomino invalido",
 		},
 		{
 			nome: "Fração negativa",
@@ -65,6 +70,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: -1,
 			},
 			errEsperado: ErrFracaoIdealInvalida,
+			msgEsperada: "fracao ideal deve ser maior que zero",
 		},
 		{
 			nome: "Fração NaN",
@@ -74,6 +80,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: math.NaN(),
 			},
 			errEsperado: ErrFracaoIdealInvalida,
+			msgEsperada: "fracao ideal deve ser maior que zero",
 		},
 		{
 			nome: "Fração infinita",
@@ -83,6 +90,7 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: math.Inf(1),
 			},
 			errEsperado: ErrFracaoIdealInvalida,
+			msgEsperada: "fracao ideal deve ser maior que zero",
 		},
 		{
 			nome: "Fração infinita negativa",
@@ -92,6 +100,27 @@ func TestValidarElegibilidade(t *testing.T) {
 				FracaoIdeal: math.Inf(-1),
 			},
 			errEsperado: ErrFracaoIdealInvalida,
+			msgEsperada: "fracao ideal deve ser maior que zero",
+		},
+		{
+			nome: "ID vazio e inadimplente: identificador e verificado primeiro",
+			condomino: Condomino{
+				ID:          "",
+				Adimplente:  false,
+				FracaoIdeal: 10,
+			},
+			errEsperado: ErrIdentificadorInvalido,
+			msgEsperada: "identificador do condomino invalido",
+		},
+		{
+			nome: "Inadimplente e fracao zerada: inadimplencia e verificada antes da fracao",
+			condomino: Condomino{
+				ID:          "apto-404",
+				Adimplente:  false,
+				FracaoIdeal: 0,
+			},
+			errEsperado: ErrInadimplente,
+			msgEsperada: "condomino impedido de votar por inadimplencia",
 		},
 	}
 
@@ -99,7 +128,10 @@ func TestValidarElegibilidade(t *testing.T) {
 		t.Run(tc.nome, func(t *testing.T) {
 			err := ValidarElegibilidade(tc.condomino)
 			if !errors.Is(err, tc.errEsperado) {
-				t.Errorf("%s: esperava erro '%v', obteve '%v'", tc.nome, tc.errEsperado, err)
+				t.Fatalf("esperava erro '%v', obteve '%v'", tc.errEsperado, err)
+			}
+			if err != nil && err.Error() != tc.msgEsperada {
+				t.Errorf("mensagem: esperava %q, obteve %q", tc.msgEsperada, err.Error())
 			}
 		})
 	}
