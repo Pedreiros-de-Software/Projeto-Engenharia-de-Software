@@ -6,10 +6,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    env: { TZ: 'America/Sao_Paulo' },
+    mockReset: true,
     coverage: {
       provider: 'v8',
-      include: ['src/pages/**/*.{ts,tsx}'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/**/*.d.ts', 'src/api/types.ts', 'src/test/**', 'src/**/*.test.{ts,tsx}'],
       reporter: ['text', 'html', 'lcov'],
+      thresholds: { statements: 90, branches: 85, functions: 90, lines: 90 },
     },
   },
 })
