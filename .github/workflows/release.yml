@@ -1,0 +1,80 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TEST_DATABASE_URL: postgres://consensu:consensu@localhost:5432/consensu?sslmode=disable
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: consensu
+          POSTGRES_PASSWORD: consensu
+          POSTGRES_DB: consensu
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U consensu -d consensu"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Não grava o token (com permissão de escrita) no git config; só o passo da release o recebe, via GH_TOKEN.
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.26.x"
+          check-latest: true
+          cache-dependency-path: backend/go.sum
+      - name: Testes (backend, com Postgres)
+        working-directory: backend
+        run: go test -race -count=1 ./...
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Testes (frontend)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+
+      - name: Binário do backend (linux/amd64)
+        working-directory: backend
+        env:
+          CGO_ENABLED: "0"
+          GOOS: linux
+          GOARCH: amd64
+        run: go build -trimpath -ldflags="-s -w" -o ../dist/consensu-api-linux-amd64 ./cmd/api
+      - name: Build do frontend (frontend-dist.tar.gz)
+        working-directory: frontend
+        run: |
+          npm run build
+          tar -czf ../dist/frontend-dist.tar.gz -C dist .
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum consensu-api-linux-amd64 frontend-dist.tar.gz > SHA256SUMS.txt
+
+      - name: Cria a GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Consensu $GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag

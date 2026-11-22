@@ -15,6 +15,7 @@ secreto, maioria absoluta e 2º turno) e priorização de projetos (cédula Bord
    `.env` é exportado antes:
 
 ```bash
+cp .env.example .env    # só na primeira vez: credenciais do Postgres local
 docker compose up -d postgres
 cd backend && cp .env.example .env && set -a && . ./.env && set +a && go run ./cmd/api
 ```
