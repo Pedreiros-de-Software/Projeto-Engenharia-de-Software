@@ -3,7 +3,7 @@
 Todas as mudanças relevantes do Consensu ficam registradas aqui. O formato segue o
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa [versionamento semântico](https://semver.org/lang/pt-BR/).
 
-## [1.0.0] - AAAA-MM-DD
+## [1.0.0] - 2026-11-23
 
 Primeira versão completa: as nove histórias (#17 a #25) dos três contextos funcionam de ponta a ponta, da interface
 ao banco.
