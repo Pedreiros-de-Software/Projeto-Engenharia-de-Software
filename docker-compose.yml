@@ -1,0 +1,50 @@
+# Antes da primeira vez:       cp .env.example .env   (credenciais do Postgres local, fora do git)
+# Sistema completo:            docker compose up --build   (site em http://localhost:3000)
+# Só o banco, para modo dev:   docker compose up -d postgres
+# Portas do host ocupadas? Troque com POSTGRES_PORT, API_PORT e WEB_PORT (ex.: WEB_PORT=3001 docker compose up).
+# Postgres e API só aceitam conexões da própria máquina (127.0.0.1); o site (web) é o único exposto na rede.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?defina no .env (cp .env.example .env)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina no .env (cp .env.example .env)}
+      POSTGRES_DB: ${POSTGRES_DB:?defina no .env (cp .env.example .env)}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      # Usuário, senha e banco chegam pelas variáveis padrão do Postgres (PGUSER, PGPASSWORD, PGDATABASE),
+      # que o driver pgx lê do ambiente; a URL não carrega credenciais.
+      DATABASE_URL: postgres://postgres:5432/?sslmode=disable
+      PGUSER: ${POSTGRES_USER:?defina no .env (cp .env.example .env)}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?defina no .env (cp .env.example .env)}
+      PGDATABASE: ${POSTGRES_DB:?defina no .env (cp .env.example .env)}
+      SEED_DEMO: "true"
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true # reinicia o nginx quando a API é recriada, para ele achar o novo endereço
+
+volumes:
+  postgres_data:

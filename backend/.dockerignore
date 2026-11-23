@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+coverage.*
+*.out
+*.test
+mutacao.txt
